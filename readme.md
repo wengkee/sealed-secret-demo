@@ -10,12 +10,23 @@ We will need to install a client to seal / encrypt the secret, which is `kubesea
 
     brew install kubeseal
 
+# Get public certificate 
+After logging into OpenShift / K8s, you can fetch the public cert by doing
+
+    kubeseal --fetch-cert > sealsecret.pem  
+
 # Sealing the secret (locally)
-Here, we will create a secret file, and then seal it with `kubeseal`. We should login to OpenShift cluster before running kubeseal.
+Here, we will create a secret file
 
     echo -n bar | oc create secret generic mysecret --dry-run=client --from-file=foo=/dev/stdin -o yaml > mysecret.yaml
 
-    kubeseal < mysecret.yaml > mysealedsecret.yaml
+and then seal it with `kubeseal`. We should login to OpenShift cluster before running kubeseal.
+
+    kubeseal < mysecret.yaml --cert sealsecret.pem -o yaml > mysealedsecret.yaml
+
+Alternatively you can do it without the cert file, but it will require connection and logging into OpenShift / K8s cluster.
+
+    kubeseal < mysecret.yaml -o yaml > mysealedsecret.yaml
 
 # Apply the SealedSecret 
 Once we have the SealedSecret file, we should be able to apply this into the OpenShift cluster. The Controller will in turn decrypt it and create a Secret based on it.
